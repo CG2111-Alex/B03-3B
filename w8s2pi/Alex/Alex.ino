@@ -262,8 +262,14 @@ void setupEINT()
   // Use bare-metal to configure pins 2 and 3 to be
   // falling edge triggered. Remember to enable
   // the INT0 and INT1 interrupts.
+  // pins 2 and 3 are PD0 and PD1 respectively
+    // Disable interrupts
+    cli();
+    DDRB |=  0b00000011;
     EICRA = 0b00001010;
     EIMSK = 0b00000011;
+    // Activate interrupts
+    sei();
 }
 
 // Implement the external interrupt ISRs below.
@@ -291,7 +297,13 @@ ISR(INT1_vect) {
 void setupSerial()
 {
   // To replace later with bare-metal.
-  Serial.begin(9600);
+  // Serial.begin(9600);
+  // baud rate = ( 16MHz/(16*9600) ) - 1 = 103.1666s
+  UBRR0L = 103;
+  UBRR0H = 0;
+  // Setting to asynchronous USART
+  UCSR0C = 00000110;
+  UCSR0A = 0; // to disable double-speed mode and multiprocessor mode
 }
 
 // Start the serial connection. For now we are using
@@ -302,7 +314,7 @@ void startSerial()
 {
   // Empty for now. To be replaced with bare-metal code
   // later on.
-  
+  UCSR0B = 0b10011000;
 }
 
 // Read the serial port. Returns the read character in
@@ -318,6 +330,9 @@ int readSerial(char *buffer)
     buffer[count++] = Serial.read();
 
   return count;
+  
+  //Disable UDRE interrupt
+  UCSR0B &= 0b11011111;
 }
 
 // Write to the serial port. Replaced later with
@@ -325,7 +340,10 @@ int readSerial(char *buffer)
 
 void writeSerial(const char *buffer, int len)
 {
-  Serial.write(buffer, len);
+  //Serial.write(buffer, len);
+  // not sure what to do here, combine all the items in the array buffer given the length, to form a string?
+  // Enable UDRE interrupt
+  UCSR0B |= 0b00100000;
 }
 
 /*
