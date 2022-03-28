@@ -434,7 +434,7 @@ void left(float ang, float speed)
 {
   if (ang == 0) deltaTicks = 99999999;
   else deltaTicks = computeDeltaTicks(ang);
-  targetTicks = leftReverseTicksTurns + deltaTicks;
+  targetTicks = leftReverseTicksTurns + deltaTicks * 45.0/106.6;
   dir = LEFT;
   int val = pwmVal(speed);
 
@@ -457,7 +457,7 @@ void right(float ang, float speed)
 {
   if (ang == 0) deltaTicks = 99999999;
   else deltaTicks = computeDeltaTicks(ang);
-  targetTicks = rightReverseTicksTurns + deltaTicks;
+  targetTicks = rightReverseTicksTurns + deltaTicks/2.0;
   dir = RIGHT;
   int val = pwmVal(speed);
 
