@@ -1,7 +1,7 @@
 // Sensor 1: 28.476
 // Sensor 2: 28.249
-
-#define SENSOR_M 28.249
+#define SENSOR_M1 28.476
+#define SENSOR_M2 28.249
 
 #define TIMEOUT 30000
 #define WAITING_TIME 1000
@@ -40,13 +40,10 @@ void loop()
   Serial.print("Duration: ");
   Serial.print(duration); 
   Serial.println(" microseconds"); 
-  double distance = (duration / 2.0) / SENSOR_M;
+  double distance = (duration / 2.0) / SENSOR_M1;
   Serial.print("Distance: ");
   Serial.print(distance);
   Serial.println( "cm");
-
-  // Sensor 1: 28.476
-  // Sensor 2:
   
   delay(WAITING_TIME); 
 }
