@@ -41,7 +41,7 @@ void handleError(const char *buffer)
 }
 
 void handleUltra(const char *buffer) {
-	int32_t data[];
+	int32_t data[16];
 	memcpy(data, &buffer[1], sizeof(data));
 
 	printf("\n ------- ALEX ULTRA REPORT ------- \n\n");
@@ -96,7 +96,7 @@ void handleNetwork(const char *buffer, int len)
 		handleStatus(buffer);
 		break;
 		
-		case NET_ULTRA_PACKET;
+		case NET_ULTRA_PACKET:
 		handleUltra(buffer);
 		break;
 
