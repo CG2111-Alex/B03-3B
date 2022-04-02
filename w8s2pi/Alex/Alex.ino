@@ -629,7 +629,7 @@ void handlePacket(TPacket *packet)
       break;
 
     case PACKET_TYPE_HELLO:
-      waitForHello();
+//      waitForHello();
       break;
   }
 }
