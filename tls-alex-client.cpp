@@ -40,6 +40,16 @@ void handleError(const char *buffer)
 	}
 }
 
+void handleUltra(const char *buffer) {
+	int32_t data[];
+	memcpy(data, &buffer[1], sizeof(data));
+
+	printf("\n ------- ALEX ULTRA REPORT ------- \n\n");
+	printf("Front Ultrasonic Sensor Distance:\t\t%d\n", data[0]);
+	printf("Side Ultrasonic Sensor Distance:\t\t%d\n", data[1]);
+	printf("\n---------------------------------------\n\n");
+}
+
 void handleStatus(const char *buffer)
 {
 	int32_t data[16];
@@ -84,6 +94,10 @@ void handleNetwork(const char *buffer, int len)
 
 		case NET_STATUS_PACKET:
 		handleStatus(buffer);
+		break;
+		
+		case NET_ULTRA_PACKET;
+		handleUltra(buffer);
 		break;
 
 		case NET_MESSAGE_PACKET:
@@ -159,7 +173,7 @@ void *writerThread(void *conn)
 	while(!quit)
 	{
 		char ch;
-		printf("Command (f=forward, b=reverse, l=turn left, r=turn right, s=stop, c=clear stats, g=get stats q=exit)\n");
+		printf("Command (f=forward, b=reverse, l=turn left, r=turn right, u=ultrasonic data, s=stop, c=clear stats, g=get stats q=exit)\n");
 		scanf("%c", &ch);
 
 		// Purge extraneous characters from input stream
@@ -184,6 +198,8 @@ void *writerThread(void *conn)
 						memcpy(&buffer[2], params, sizeof(params));
 						sendData(conn, buffer, sizeof(buffer));
 						break;
+			case 'u':
+			case 'U':
 			case 's':
 			case 'S':
 			case 'c':

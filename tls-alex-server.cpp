@@ -39,9 +39,7 @@ static volatile int networkActive;
 static void *tls_conn = NULL;
 
 /*
-
 	Alex Serial Routines to the Arduino
-
 	*/
 
 // Prototype for sendNetworkData
@@ -74,6 +72,14 @@ void handleStatus(TPacket *packet)
 	sendNetworkData(data, sizeof(data));
 }
 
+void handleULTRA(TPacket *packet) {
+	char data[65];
+	printf("UART ULTRASONIC PACKET\n");
+	data[0] = NET_ULTRA_PACKET;
+	memcpy(&data[1], packet->params, sizeof(packet->params));
+	sendNetworkData(data, sizeof(data));
+}
+
 void handleResponse(TPacket *packet)
 {
 	// The response code is stored in command
@@ -86,6 +92,10 @@ void handleResponse(TPacket *packet)
 			resp[1] = RESP_OK;
 			sendNetworkData(resp, sizeof(resp));
 		break;
+
+		case RESP_ULTRA:
+			handleULTRA(packet);
+			break;
 
 		case RESP_STATUS:
 			handleStatus(packet);
@@ -266,6 +276,12 @@ void handleCommand(void *conn, const char *buffer)
 		case 'g':
 		case 'G':
 			commandPacket.command = COMMAND_GET_STATS;
+			uartSendPacket(&commandPacket);
+			break;
+
+		case 'u':
+		case 'U':
+			commandPacket.command = COMMAND_GET_ULTRA;
 			uartSendPacket(&commandPacket);
 			break;
 

@@ -6,8 +6,8 @@
 #define TIMEOUT 30000
 #define WAITING_TIME 1000
 
-#define SENSOR_M1 28.476
-#define SENSOR_M2 28.249
+#define SENSOR_SIDE 28.476
+#define SENSOR_FRONT 28.249
 
 void setup() {
   // put your setup code here, to run once:
@@ -20,8 +20,6 @@ void setup() {
 
 void loop() {
   // put your main code here, to run repeatedly:
-  double distance_front = US_distance(trigFront, echoFront, SENSOR_M1);
-  double distance_side = US_distance(trigSide, echoSide, SENSOR_M2);
 
   Serial.print("Front: ");
   Serial.println(distance_front);

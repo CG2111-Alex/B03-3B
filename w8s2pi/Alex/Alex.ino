@@ -42,6 +42,18 @@ volatile TDirection dir  = STOP;
 #define ALEX_LENGTH         18.5
 #define ALEX_BREADTH        12 
 
+// Ultrasonic Distance 
+#define trigFront 7
+#define echoFront 8
+#define trigSide 12
+#define echoSide 13
+
+#define TIMEOUT 30000
+
+#define SENSOR_SIDE 28.476
+#define SENSOR_FRONT 28.249
+
+
 float alexDiagonal = 0.0;
 float alexCirc = 0.0;
 /*
@@ -73,6 +85,8 @@ unsigned long deltaDist;
 unsigned long newDist;
 unsigned long deltaTicks;
 unsigned long targetTicks;
+
+
 /*
  * 
  * Alex Communication Routines.
@@ -95,6 +109,28 @@ TResult readPacket(TPacket *packet)
     else
       return deserialize(buffer, len, packet);
     
+}
+long ultrasonic_distance(int trig, int echo, float constant) {
+  digitalWrite(trig, LOW);
+  delayMicroseconds(2);
+  digitalWrite(trig, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(trig, LOW);
+  long duration = pulseIn(echo, HIGH, TIMEOUT); 
+  long distance = (duration / 2) / constant;
+  return distance;
+}
+
+void sendUltra() {
+  long distance_front = ultrasonic_distance(trigFront, echoFront, SENSOR_FRONT);
+  long distance_side = ultrasonic_distance(trigSide, echoSide, SENSOR_SIDE);
+
+  TPacket ultraPacket;
+  ultraPacket.packetType = PACKET_TYPE_RESPONSE;
+  ultraPacket.command = RESP_ULTRA;
+  ultraPacket.params[0] = distance_front;
+  ultraPacket.params[1] = distance_side;
+  sendResponse(&ultraPacket);
 }
 
 void sendStatus()
@@ -234,9 +270,6 @@ void leftISR()
   } else if (dir == RIGHT) {
     leftForwardTicksTurns++;
   }
-//  float distance = (leftTicks / (float) COUNTS_PER_REV) * WHEEL_CIRC;
-//  Serial.print("LEFT_dist: ");
-//  Serial.println(distance);
 }
 
 void rightISR()
@@ -250,9 +283,6 @@ void rightISR()
   } else if (dir == RIGHT) {
     rightReverseTicksTurns++;
   }
-//  float distance = (rightTicks / (float) COUNTS_PER_REV) * WHEEL_CIRC;
-//  Serial.print("RIGHT_dist: ");
-//  Serial.println(distance);
 }
 
 // Set up the external interrupt pins INT0 and INT1
@@ -523,26 +553,18 @@ void handleCommand(TPacket *command)
         sendOK();
         forward((float) command->params[0], (float) command->params[1]);
       break;
-
-    /*
-     * Implement code for other commands here.
-     * 
-     */
     case COMMAND_REVERSE:
         sendOK();
         reverse((float) command->params[0], (float) command->params[1]);
       break;
-            
     case COMMAND_TURN_LEFT:
         sendOK();
         left((float) command->params[0], (float) command->params[1]);
       break;
-
     case COMMAND_TURN_RIGHT:
         sendOK();
         right((float) command->params[0], (float) command->params[1]);
       break;
-
     case COMMAND_STOP:
         sendOK();
         stop();
@@ -553,7 +575,10 @@ void handleCommand(TPacket *command)
     case COMMAND_CLEAR_STATS:
         clearOneCounter(command->params[0]);
         sendOK();
-    break;
+      break;
+    case COMMAND_GET_ULTRA:
+      
+      break;
     default:
       sendBadCommand();
   }
@@ -568,33 +593,33 @@ void waitForHello()
     TPacket hello;
     TResult result;
     
-    do
-    {
+    do {
       result = readPacket(&hello);
     } while (result == PACKET_INCOMPLETE);
 
-    if(result == PACKET_OK)
-    {
-      if(hello.packetType == PACKET_TYPE_HELLO)
-      {
-     
-
+    if(result == PACKET_OK) {
+      if(hello.packetType == PACKET_TYPE_HELLO) {
         sendOK();
         exit=1;
-      }
-      else
+      } else {
         sendBadResponse();
-    }
-    else
-      if(result == PACKET_BAD)
-      {
-        sendBadPacket();
       }
-      else
-        if(result == PACKET_CHECKSUM_BAD)
-          sendBadChecksum();
+    } else if(result == PACKET_BAD) {
+      sendBadPacket();
+    } else if(result == PACKET_CHECKSUM_BAD) {
+      sendBadChecksum();
+    }
   } // !exit
 }
+
+void setupUltrasonic() {
+  pinMode(trigFront, OUTPUT);
+  pinMode(echoFront, INPUT);
+  pinMode(trigSide, OUTPUT);
+  pinMode(echoSide, INPUT);
+}
+
+
 
 void setup() {
   // put your setup code here, to run once:
@@ -608,6 +633,7 @@ void setup() {
   startMotors();
   enablePullups();
   initializeState();
+  setupUltrasonic();
   sei();
 }
 
@@ -629,52 +655,13 @@ void handlePacket(TPacket *packet)
       break;
 
     case PACKET_TYPE_HELLO:
-//      waitForHello();
+     waitForHello();
       break;
   }
 }
 bool run = 1;
 
 void loop() {
-
-// Uncomment the code below for Step 2 of Activity 3 in Week 8 Studio 
-//  while (Serial.available()) {
-//    char ch = Serial.read();
-//    if (ch == 'w') {
-//      forward(0,130);
-//      delay(500);
-//      stop();
-//    } else if (ch == 'a') {
-//      left(0, 90);
-//      delay(500);
-//      stop();
-//
-//    } else if (ch == 'd') {
-//      right(0, 90);
-//      delay(500);
-//      stop();
-//
-//    } else if (ch == 's') {
-//      reverse(0, 130);
-//      delay(500);
-//      stop();
-//
-//    }
-    
-// forward(0, 100);
-// delay(2000);
-// stop();
-// float distance_l = (leftTicks / (float) COUNTS_PER_REV) * WHEEL_CIRC;
-// float distance_r = (rightTicks / (float) COUNTS_PER_REV) * WHEEL_CIRC;
-// Serial.print("Distance_l: ");
-// Serial.println(distance_l);
-// Serial.print("Distance_r: ");
-// Serial.println(distance_r);
-// 
-// while (1);
-
-// Uncomment the code below for Week 9 Studio 2
-
  // put your main code here, to run repeatedly:
   TPacket recvPacket; // This holds commands from the Pi
 
@@ -682,52 +669,51 @@ void loop() {
   
   if(result == PACKET_OK)
     handlePacket(&recvPacket);
-  else
-    if(result == PACKET_BAD)
-    {
+  else {
+    if(result == PACKET_BAD){
       sendBadPacket();
-    }
-    else
-      if(result == PACKET_CHECKSUM_BAD)
-      {
-        sendBadChecksum();
-      } 
-    if (deltaDist > 0) {
-        if (dir == FORWARD) {
-            if (forwardDist >= newDist) {
-                deltaDist = 0;
-                newDist = 0;
-                stop();
-            }
-        } else if (dir == BACKWARD) {
-            if (reverseDist >= newDist) {
-                deltaDist = 0;
-                newDist = 0;
-                stop();
-            }
-        } else if (dir == STOP) {
-             deltaDist = 0;
-             newDist = 0;
-             stop();
-     }
-    }
-   if (deltaTicks > 0) {
-        if (dir == LEFT) {
-            if (leftReverseTicksTurns >= targetTicks) {
-                deltaTicks = 0;
-                targetTicks = 0;
-                stop();
-            }
-        } else if (dir == RIGHT) {
-            if (rightReverseTicksTurns >= targetTicks) {
-                deltaTicks = 0;
-                targetTicks = 0;
-                stop();
-            }
-        } else if (dir == STOP) {
-            deltaTicks = 0;
-            targetTicks = 0;
+    } else if(result == PACKET_CHECKSUM_BAD) {
+      sendBadChecksum();
+    } 
+  }
+    
+    
+  if (deltaDist > 0) {
+      if (dir == FORWARD) {
+          if (forwardDist >= newDist) {
+              deltaDist = 0;
+              newDist = 0;
+              stop();
+          }
+      } else if (dir == BACKWARD) {
+          if (reverseDist >= newDist) {
+              deltaDist = 0;
+              newDist = 0;
+              stop();
+          }
+      } else if (dir == STOP) {
+            deltaDist = 0;
+            newDist = 0;
             stop();
-        }
-   }
+    }
+  }
+  if (deltaTicks > 0) {
+      if (dir == LEFT) {
+          if (leftReverseTicksTurns >= targetTicks) {
+              deltaTicks = 0;
+              targetTicks = 0;
+              stop();
+          }
+      } else if (dir == RIGHT) {
+          if (rightReverseTicksTurns >= targetTicks) {
+              deltaTicks = 0;
+              targetTicks = 0;
+              stop();
+          }
+      } else if (dir == STOP) {
+          deltaTicks = 0;
+          targetTicks = 0;
+          stop();
+      }
+  }
 }
