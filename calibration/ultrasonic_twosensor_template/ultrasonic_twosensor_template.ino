@@ -20,7 +20,8 @@ void setup() {
 
 void loop() {
   // put your main code here, to run repeatedly:
-
+  int distance_front = US_distance(trigFront, echoFront, SENSOR_FRONT);
+  int distance_side = US_distance(trigSide, echoSide, SENSOR_SIDE);
   Serial.print("Front: ");
   Serial.println(distance_front);
   Serial.print("Side: ");

@@ -110,7 +110,7 @@ TResult readPacket(TPacket *packet)
       return deserialize(buffer, len, packet);
     
 }
-long ultrasonic_distance(int trig, int echo, float constant) {
+int ultrasonic_distance(int trig, int echo, float constant) {
   digitalWrite(trig, LOW);
   delayMicroseconds(2);
   digitalWrite(trig, HIGH);
@@ -122,8 +122,8 @@ long ultrasonic_distance(int trig, int echo, float constant) {
 }
 
 void sendUltra() {
-  long distance_front = ultrasonic_distance(trigFront, echoFront, SENSOR_FRONT);
-  long distance_side = ultrasonic_distance(trigSide, echoSide, SENSOR_SIDE);
+  int distance_front = ultrasonic_distance(trigFront, echoFront, SENSOR_FRONT);
+  int distance_side = ultrasonic_distance(trigSide, echoSide, SENSOR_SIDE);
 
   TPacket ultraPacket;
   ultraPacket.packetType = PACKET_TYPE_RESPONSE;
