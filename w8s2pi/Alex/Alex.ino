@@ -53,6 +53,9 @@ volatile TDirection dir  = STOP;
 #define SENSOR_M1 28.476
 #define SENSOR_M2 28.249
 
+#define RC 0.9
+#define LC 1
+
 float alexDiagonal = 0.0;
 float alexCirc = 0.0;
 /*
@@ -415,7 +418,7 @@ void forward(float dist, float speed)
   // This will be replaced later with bare-metal code.
   
   analogWrite(LF, val);
-  analogWrite(RF, val);
+  analogWrite(RF, val * RC);
   analogWrite(LR,0);
   analogWrite(RR, 0);
 }
@@ -442,7 +445,7 @@ void reverse(float dist, float speed)
   // RF = Right forward pin, RR = Right reverse pin
   // This will be replaced later with bare-metal code.
   analogWrite(LR, val);
-  analogWrite(RR, val);
+  analogWrite(RR, val * RC);
   analogWrite(LF, 0);
   analogWrite(RF, 0);
 }
@@ -470,7 +473,7 @@ void left(float ang, float speed)
   // To turn left we reverse the left wheel and move
   // the right wheel forward.
   analogWrite(LR, val);
-  analogWrite(RF, val);
+  analogWrite(RF, val * RC);
   analogWrite(LF, 0);
   analogWrite(RR, 0);
 }
@@ -492,7 +495,7 @@ void right(float ang, float speed)
   // We will also replace this code with bare-metal later.
   // To turn right we reverse the right wheel and move
   // the left wheel forward.
-  analogWrite(RR, val);
+  analogWrite(RR, val * RC);
   analogWrite(LF, val);
   analogWrite(LR, 0);
   analogWrite(RF, 0);
