@@ -42,6 +42,17 @@ volatile TDirection dir  = STOP;
 #define ALEX_LENGTH         18.5
 #define ALEX_BREADTH        12 
 
+#define trigFront 7
+#define echoFront 8
+#define trigSide 12
+#define echoSide 13
+
+#define TIMEOUT 30000
+#define WAITING_TIME 1000
+
+#define SENSOR_M1 28.476
+#define SENSOR_M2 28.249
+
 float alexDiagonal = 0.0;
 float alexCirc = 0.0;
 /*
@@ -97,6 +108,17 @@ TResult readPacket(TPacket *packet)
     
 }
 
+long US_distance(int trig, int echo, float constant) {
+  digitalWrite(trig, LOW);
+  delayMicroseconds(2);
+  digitalWrite(trig, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(trig, LOW);
+  long duration = pulseIn(echo, HIGH, TIMEOUT); 
+  long distance = (duration / 2.0) / constant;
+  return distance;
+}
+
 void sendStatus()
 {
   // Implement code to send back a packet containing key
@@ -106,6 +128,9 @@ void sendStatus()
   // packetType and command files accordingly, then use sendResponse
   // to send out the packet. See sendMessage on how to use sendResponse.
   //
+  long distance_front = US_distance(trigFront, echoFront, SENSOR_M1);
+  long distance_side = US_distance(trigSide, echoSide, SENSOR_M2);
+  
   TPacket statusPacket;
   statusPacket.packetType = PACKET_TYPE_RESPONSE;
   statusPacket.command = RESP_STATUS;
@@ -119,6 +144,8 @@ void sendStatus()
   statusPacket.params[7] = rightReverseTicksTurns;
   statusPacket.params[8] = forwardDist;
   statusPacket.params[9] = reverseDist;
+  statusPacket.params[10] = distance_front;
+  statusPacket.params[11] = distance_side;
   sendResponse(&statusPacket);
 }
 
@@ -596,6 +623,13 @@ void waitForHello()
   } // !exit
 }
 
+void setupultrasonic() {
+  pinMode(trigFront, OUTPUT);
+  pinMode(echoFront, INPUT);
+  pinMode(trigSide, OUTPUT);
+  pinMode(echoSide, INPUT);
+}
+
 void setup() {
   // put your setup code here, to run once:
   alexDiagonal = sqrt((ALEX_LENGTH * ALEX_LENGTH) + (ALEX_BREADTH * ALEX_BREADTH));
@@ -608,6 +642,7 @@ void setup() {
   startMotors();
   enablePullups();
   initializeState();
+  setupultrasonic
   sei();
 }
 
@@ -636,45 +671,6 @@ void handlePacket(TPacket *packet)
 bool run = 1;
 
 void loop() {
-
-// Uncomment the code below for Step 2 of Activity 3 in Week 8 Studio 
-//  while (Serial.available()) {
-//    char ch = Serial.read();
-//    if (ch == 'w') {
-//      forward(0,130);
-//      delay(500);
-//      stop();
-//    } else if (ch == 'a') {
-//      left(0, 90);
-//      delay(500);
-//      stop();
-//
-//    } else if (ch == 'd') {
-//      right(0, 90);
-//      delay(500);
-//      stop();
-//
-//    } else if (ch == 's') {
-//      reverse(0, 130);
-//      delay(500);
-//      stop();
-//
-//    }
-    
-// forward(0, 100);
-// delay(2000);
-// stop();
-// float distance_l = (leftTicks / (float) COUNTS_PER_REV) * WHEEL_CIRC;
-// float distance_r = (rightTicks / (float) COUNTS_PER_REV) * WHEEL_CIRC;
-// Serial.print("Distance_l: ");
-// Serial.println(distance_l);
-// Serial.print("Distance_r: ");
-// Serial.println(distance_r);
-// 
-// while (1);
-
-// Uncomment the code below for Week 9 Studio 2
-
  // put your main code here, to run repeatedly:
   TPacket recvPacket; // This holds commands from the Pi
 

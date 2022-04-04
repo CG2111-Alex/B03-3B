@@ -56,6 +56,8 @@ void handleStatus(const char *buffer)
 	printf("Right Reverse Ticks Turns:\t%d\n", data[7]);
 	printf("Forward Distance:\t\t%d\n", data[8]);
 	printf("Reverse Distance:\t\t%d\n", data[9]);
+	printf("Ultrasonic Front:\t\t%d\n", data[10]);
+	printf("Ultrasonic Side:\t\t%d\n", data[11]);
 	printf("\n---------------------------------------\n\n");
 }
 
