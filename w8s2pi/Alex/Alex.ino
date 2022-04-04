@@ -642,7 +642,7 @@ void setup() {
   startMotors();
   enablePullups();
   initializeState();
-  setupultrasonic
+  setupultrasonic();
   sei();
 }
 
