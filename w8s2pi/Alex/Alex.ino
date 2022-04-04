@@ -496,6 +496,11 @@ void stop()
     analogWrite(RR, 0);
 }
 
+//void lstop() {
+//  analogWrite(LF, 0);
+//  analogWrite(
+//}
+
 /*
    Alex's setup and run codes
 
