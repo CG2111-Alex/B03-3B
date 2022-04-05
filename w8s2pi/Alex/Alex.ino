@@ -675,7 +675,7 @@ void setup() {
   setupSerial();
   startSerial();
   setupMotors();
-  startMotors();
+  // startMotors();
   enablePullups();
   initializeState();
   setupultrasonic();
