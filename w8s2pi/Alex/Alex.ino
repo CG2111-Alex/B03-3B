@@ -116,11 +116,31 @@ TResult readPacket(TPacket *packet) {
     return deserialize(buffer, len, packet);
 }
 
-long US_distance(int trig, int echo, float constant) {
-  digitalWrite(trig, LOW);
+long US_distance(char dir, int trig, int echo, float constant) {
+  if (dir == "F") {
+    // PD7 & PB0
+    PORTD &= 0b01111111;
+    //digitalWrite(trig, LOW);
+    delayMicroseconds(2);
+    PORTB |= 0b10000000;
+    //digitalWrite(trig, HIGH);
+    delayMicroseconds(10);
+    PORTD &= 0b01111111;
+    //digitalWrite(trig, LOW);
+  }
+
+  if (dir == "S") {
+    // PB4 & PB5
+    PORTD &= 0b00010000;
+    //digitalWrite(trig)
+    //not finished
+  }
+  
   delayMicroseconds(2);
-  digitalWrite(trig, HIGH);
+  PORTD |= 0b10000000;
+  // digitalWrite(trig, HIGH);
   delayMicroseconds(10);
+  PORTD &= 0b01111111;
   digitalWrite(trig, LOW);
   long duration = pulseIn(echo, HIGH, TIMEOUT);
   long distance = (duration / 2.0) / constant;
@@ -287,7 +307,6 @@ void setupEINT() {
 
   EICRA = 0b00001010;
   EIMSK = 0b00000011;
-
 }
 
 // Implement the external interrupt ISRs below.
@@ -506,6 +525,7 @@ unsigned long computeDeltaTicks(float ang) {
 
   return ticks;
 }
+
 void left(float ang, float speed) {
   if (ang == 0)
     deltaTicks = 99999999;
@@ -659,10 +679,15 @@ void waitForHello() {
 }
 
 void setupultrasonic() {
-  pinMode(trigFront, OUTPUT);
-  pinMode(echoFront, INPUT);
-  pinMode(trigSide, OUTPUT);
-  pinMode(echoSide, INPUT);
+
+  DDRB |= 0b00010000;
+  DDRB &= 0b11011110;
+  DDRD |= 0b10000000;
+  
+  // pinMode(trigFront, OUTPUT); // Pin 7 = PD7
+  // pinMode(echoFront, INPUT); // Pin 8 = PB0
+  // pinMode(trigSide, OUTPUT); // Pin 12 = PB4
+  // pinMode(echoSide, INPUT); // Pin 13 = PB5
 }
 
 void setup() {
