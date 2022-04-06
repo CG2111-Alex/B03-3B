@@ -148,8 +148,7 @@ void flushInput()
 
 void getParams(int32_t *params)
 {
-	printf("Enter distance/angle in cm/degrees (e.g. 50) and power in %% (e.g. 75) separated by space.\n");
-	printf("E.g. 50 75 means go at 50 cm at 75%% power for forward/backward, or 50 degrees left or right turn at 75%%  power\n");
+	printf("Enter command HERE (distance speed or angle speed)\n");
 	scanf("%d %d", &params[0], &params[1]);
 	flushInput();
 }
@@ -161,7 +160,7 @@ void *writerThread(void *conn)
 	while(!quit)
 	{
 		char ch;
-		printf("Command (f=forward, b=reverse, l=turn left, r=turn right, s=stop, c=clear stats, g=get stats q=exit)\n");
+		printf("Command (wasd,  f=forward, b=reverse, l=turn left, r=turn right, x=stop, c=clear stats, g=get stats q=exit)\n");
 		scanf("%c", &ch);
 
 		// Purge extraneous characters from input stream
@@ -186,8 +185,8 @@ void *writerThread(void *conn)
 						memcpy(&buffer[2], params, sizeof(params));
 						sendData(conn, buffer, sizeof(buffer));
 						break;
-			case 's':
-			case 'S':
+			case 'x':
+			case 'X':
 			case 'c':
 			case 'C':
 			case 'g':
