@@ -556,7 +556,7 @@ void handleCommand(TPacket *command)
 
     case 12:
         sendOK();
-        left(10, 80);
+        left(20, 90);
       break;
 
     case 13:
@@ -566,7 +566,7 @@ void handleCommand(TPacket *command)
 
     case 14:
         sendOK();
-        right(10, 80);
+        right(20, 90);
       break;
 
     case COMMAND_FORWARD:
