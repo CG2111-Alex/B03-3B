@@ -472,8 +472,8 @@ void left(float ang, float speed)
   // We will also replace this code with bare-metal later.
   // To turn left we reverse the left wheel and move
   // the right wheel forward.
-  analogWrite(LR, val * LC);
-  analogWrite(RF, val * RC);
+  analogWrite(LR, val);
+  analogWrite(RF, val);
   analogWrite(LF, 0);
   analogWrite(RR, 0);
 }
@@ -495,8 +495,8 @@ void right(float ang, float speed)
   // We will also replace this code with bare-metal later.
   // To turn right we reverse the right wheel and move
   // the left wheel forward.
-  analogWrite(RR, val * RC);
-  analogWrite(LF, val * LC);
+  analogWrite(RR, val);
+  analogWrite(LF, val);
   analogWrite(LR, 0);
   analogWrite(RF, 0);
 }
@@ -549,6 +549,26 @@ void handleCommand(TPacket *command)
   switch(command->command)
   {
     // For movement commands, param[0] = distance, param[1] = speed.
+    case 11:
+        sendOK();
+        forward(5, 65);
+      break;
+
+    case 12:
+        sendOK();
+        left(10, 80);
+      break;
+
+    case 13:
+        sendOK();
+        reverse(5,65);
+      break;
+
+    case 14:
+        sendOK();
+        right(10, 80);
+      break;
+
     case COMMAND_FORWARD:
         sendOK();
         forward((float) command->params[0], (float) command->params[1]);
