@@ -92,7 +92,18 @@ unsigned long newDist;
 unsigned long deltaTicks;
 unsigned long targetTicks;
 
+//Timers
+volatile long _timerTicks;
+
 char dataRecv, dataSend;
+
+//Motor Interrupts
+volatile int move_lf;
+volatile int move_rf;
+volatile int move_lr;
+volatile int move_rr;
+volatile long speed_l;
+volatile long speed_r;
 
 /*
  *
@@ -155,8 +166,8 @@ void sendStatus() {
   // packetType and command files accordingly, then use sendResponse
   // to send out the packet. See sendMessage on how to use sendResponse.
   //
-  long distance_front = US_distance(trigFront, echoFront, SENSOR_M1);
-  long distance_side = US_distance(trigSide, echoSide, SENSOR_M2);
+  long distance_front = US_distance("F", trigFront, echoFront, SENSOR_M1);
+  long distance_side = US_distance("S", trigSide, echoSide, SENSOR_M2);
 
   TPacket statusPacket;
   statusPacket.packetType = PACKET_TYPE_RESPONSE;
@@ -321,6 +332,49 @@ ISR(INT1_vect) {
   rightISR(); 
 }
 
+//LF
+ISR(TIMER0_COMPA_vect) {
+  if (move_lf == 1) {
+    OCR0A = speed_l;
+  } else {
+    OCR0A = 0;
+  }
+}
+
+//RF
+ISR(TIMER1_COMPB_vect) {
+  if (move_rf == 1) {
+    OCR1B = speed_r * (65535/255);
+  } else {
+    OCR1B = 0;
+  }
+}
+
+//LR
+ISR(TIMER0_COMPB_vect) {
+  if (move_lr == 1) {
+    OCR0B = speed_l;
+  } else {
+    OCR0B = 0;
+  }
+}
+
+//RR
+ISR(TIMER2_COMPA_vect) {
+  if (move_rr == 1) {
+    OCR2A = speed_r;
+  } else {
+    OCR2A = 0;
+  }
+}
+
+// Delay timer (1s)
+ISR(TIMER1_COMPA_vect)
+{
+  _timerTicks++;
+}
+
+/*
 ISR(USART_RX_vect) { 
   dataRecv = UDR0;
 }
@@ -328,6 +382,22 @@ ISR(USART_RX_vect) {
 ISR(USART_UDRE_vect) {
   UDR0 = dataSend;
   UCSR0B &= ~UDRIEMASK;
+}
+*/
+
+void setupTimer() {
+  // Set timer 1 to produce 1s (1000000us) ticks 
+  // But do not start the timer here.
+  TIMSK1 |= 0b10;
+  TCNT1 = 0;
+  OCR1A = 62499;
+}
+
+void delay (int dur) {
+  _timerTicks = 0; // Reset counter
+  TCCR1B |= 0b00001100; // Turn on timer
+  while (_timerTicks < dur);
+  TCCR1B &= 0b11110011; // Turn off timer
 }
 
 // Implement INT0 and INT1 ISRs above.
@@ -341,13 +411,13 @@ ISR(USART_UDRE_vect) {
 // with bare-metal code.
 void setupSerial() {
   // To replace later with bare-metal.
-  // Serial.begin(9600);
+  Serial.begin(9600);
   // baud rate = ( 16MHz/(16*9600) ) - 1 = 103.1666s
-  UBRR0L = 103;
-  UBRR0H = 0;
+  //UBRR0L = 103;
+  //UBRR0H = 0;
   // Setting to asynchronous USART
-  UCSR0C = 00000110;
-  UCSR0A = 0; // to disable double-speed mode and multiprocessor mode
+  //UCSR0C = 00000110;
+  //UCSR0A = 0; // to disable double-speed mode and multiprocessor mode
 }
 
 // Start the serial connection. For now we are using
@@ -357,7 +427,7 @@ void setupSerial() {
 void startSerial() {
   // Empty for now. To be replaced with bare-metal code
   // later on.
-  UCSR0B = 0b10011000;
+  //UCSR0B = 0b10011000;
 }
 
 // Read the serial port. Returns the read character in
@@ -373,7 +443,7 @@ int readSerial(char *buffer) {
   }
 
   // Disable UDRE interrupt
-  UCSR0B &= 0b11011111;
+  //UCSR0B &= 0b11011111;
 
   return count;
 }
@@ -382,10 +452,10 @@ int readSerial(char *buffer) {
 // bare-metal code
 
 void writeSerial(const char *buffer, int len) {
-  // Serial.write(buffer, len);
+  Serial.write(buffer, len);
   // not sure what to do here, combine all the items in the array buffer given
   // the length, to form a string? Enable UDRE interrupt
-  UCSR0B |= 0b00100000;
+  //UCSR0B |= 0b00100000;
 }
 
 /*
@@ -411,7 +481,7 @@ void setupMotors() {
   TCCR0B = 0b00000001; // No prescaling
   TIMSK0 |= 0b110; // OCIEA = 1 OCIEB = 1
  
-  TCCR1A = 0b00100011; // Enable OC1B
+  TCCR1A = 0b00110011; // Enable OC1B
   TCCR1B = 0b00010001; // No prescaling
   TIMSK1 |= 0b100;
    
@@ -433,12 +503,16 @@ void setupMotors() {
 // Start the PWM for Alex's motors.
 // We will implement this later. For now it is
 // blank.
-void startMotors(int LF, int LR, int RF, int RR) {
-
-  OCR0A = LF; // LF
-  OCR0B = LR; // LR
-  OCR1B = RF * (65535/255); // RF
-  OCR2A = RR; // RR
+void startMotors() {
+  move_lf = 0;
+  move_rf = 0;
+  move_lr = 0;
+  move_rr = 0;
+  
+  OCR0A = 0; //lf; // LF
+  OCR0B = 0; //lr; // LR
+  OCR1B = 0; //rf * (65535/255); // RF
+  OCR2A = 0; //rr; // RR
 }
 
 // Convert percentages to PWM values
@@ -460,6 +534,9 @@ int pwmVal(float speed) {
 void forward(float dist, float speed) {
   dir = FORWARD;
   int val = pwmVal(speed);
+  move_lf = 1;
+  move_rf = 1;
+  
 
   // For now we will ignore dist and move
   // forward indefinitely. We will fix this
@@ -474,12 +551,15 @@ void forward(float dist, float speed) {
   // RF = Right forward pin, RR = Right reverse pin
   // This will be replaced later with bare-metal code.
  
-  // analogWrite(LF, val * LC);
-  // analogWrite(RF, val * RC);
-  // analogWrite(LR, 0);
-  // analogWrite(RR, 0);
-  // startMotors(int LF, int LR, int RF, int RR)
-  startMotors(val * LC, 0, val * RC, 0); 
+  //analogWrite(LF, val * LC);
+  //analogWrite(RF, val * RC);
+  //analogWrite(LR, 0);
+  //analogWrite(RR, 0);
+  //startMotors(int LF, int LR, int RF, int RR)
+  //startMotors(val * LC, 0, val * RC, 0); 
+
+  speed_l = val * LC;
+  speed_r = val * RC;
 }
 
 // Reverse Alex "dist" cm at speed "speed".
@@ -504,14 +584,14 @@ void reverse(float dist, float speed) {
   // LF = Left forward pin, LR = Left reverse pin
   // RF = Right forward pin, RR = Right reverse pin
   // This will be replaced later with bare-metal code.
-  // startMotors(int LF, int LR, int RF, int RR)
+  //startMotors(int LF, int LR, int RF, int RR)
   
   //analogWrite(LR, val * LC);
   //analogWrite(RR, val * RC);
   //analogWrite(LF, 0);
   //analogWrite(RF, 0);
 
-  startMotors(0, val * LC, 0, val * RC);
+  //startMotors(0, val * LC, 0, val * RC);
 }
 
 // Turn Alex left "ang" degrees at speed "speed".
@@ -544,7 +624,7 @@ void left(float ang, float speed) {
   // analogWrite(LF, 0);
   // analogWrite(RR, 0);
 
-  startMotors(0, val * LC, val * RC, 0);
+  //startMotors(0, val * LC, val * RC, 0);
 }
 
 // Turn Alex right "ang" degrees at speed "speed".
@@ -570,17 +650,17 @@ void right(float ang, float speed) {
   // analogWrite(LR, 0);
   // analogWrite(RF, 0);
 
-  startMotors(val * LC, 0, 0, val * RC);
+  //startMotors(val * LC, 0, 0, val * RC);
 }
 
 // Stop Alex. To replace with bare-metal code later.
 void stop() {
-  // analogWrite(LF, 0);
-  // analogWrite(LR, 0);
-  // analogWrite(RF, 0);
-  // analogWrite(RR, 0);
-  
-  startMotors(0, 0, 0, 0);
+//  analogWrite(LF, 0);
+//  analogWrite(LR, 0);
+//  analogWrite(RF, 0);
+//  analogWrite(RR, 0);
+  startMotors();
+  //startMotors(0, 0, 0, 0);
 }
 
 /*
@@ -700,7 +780,7 @@ void setup() {
   setupSerial();
   startSerial();
   setupMotors();
-  // startMotors();
+  startMotors();
   enablePullups();
   initializeState();
   setupultrasonic();
