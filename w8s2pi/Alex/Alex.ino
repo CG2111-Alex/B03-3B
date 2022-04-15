@@ -563,6 +563,8 @@ void forward(float dist, float speed) {
   speed_r = val * RC;
   OCR0A = speed_l;
   OCR2A = speed_r;
+  OCR0B = 0;
+  OCR1B = 0;
 }
 
 // Reverse Alex "dist" cm at speed "speed".
@@ -597,6 +599,8 @@ void reverse(float dist, float speed) {
   //startMotors(0, val * LC, 0, val * RC);
   OCR1B = val * RC;
   OCR0B = val * LC;
+  OCR0A = 0;
+  OCR2A = 0;
 }
 
 // Turn Alex left "ang" degrees at speed "speed".
@@ -632,6 +636,8 @@ void left(float ang, float speed) {
   //startMotors(0, val * LC, val * RC, 0);
   OCR0B = val;
   OCR2A = val;
+  OCR1B = 0;
+  OCR0A = 0;
 }
 
 // Turn Alex right "ang" degrees at speed "speed".
@@ -660,6 +666,8 @@ void right(float ang, float speed) {
   //startMotors(val * LC, 0, 0, val * RC);
   OCR0A = val;
   OCR1B = val;
+  OCR0B = 0;
+  OCR2A = 0;
 }
 
 // Stop Alex. To replace with bare-metal code later.
