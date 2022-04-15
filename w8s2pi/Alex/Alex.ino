@@ -127,36 +127,36 @@ TResult readPacket(TPacket *packet) {
     return deserialize(buffer, len, packet);
 }
 
-long US_distance(char dir, int echo, float constant) {
-  if (dir == "F") { // Trig Pin 7 = PD7
+long US_distance(char dir, int trig, int echo, float constant) {
+//  if (dir == "F") { // Trig Pin 7 = PD7
     // PD7 & PB0
-    PORTD &= 0b01111111;
-    //digitalWrite(trig, LOW);
+//    PORTD &= 0b01111111;
+    digitalWrite(trig, LOW);
     delayMicroseconds(2);
-    PORTD |= 0b10000000;
-    //digitalWrite(trig, HIGH);
+//    PORTD |= 0b10000000;
+    digitalWrite(trig, HIGH);
     delayMicroseconds(10);
-    PORTD &= 0b01111111;
-    //digitalWrite(trig, LOW);
+//    PORTD &= 0b01111111;
+    digitalWrite(trig, LOW);
     long duration = pulseIn(echo, HIGH, TIMEOUT);
     long distance = (duration / 2.0) / constant;
     return distance;
-  }
+//  }
 
-  if (dir == "S") { // Trig Pin 12 = PB4
-    // PB4 & PB5
-    PORTB &= 0b11101111; 
-    //digitalWrite(trig,LOW);
-    delayMicroseconds(2);
-    PORTB |= 0b00010000;
-    //digitalWrite(trig,HIGH);
-    delayMicroseconds(10);
-    PORTB &= 0b11101111;
-    //digitalWrite(trig,LOW);
-    long duration = pulseIn(echo, HIGH, TIMEOUT);
-    long distance = (duration / 2.0) / constant;
-    return distance;
-  }
+//  if (dir == "S") { // Trig Pin 12 = PB4
+//    // PB4 & PB5
+////    PORTB &= 0b11101111; 
+//    digitalWrite(trig,LOW);
+//    delayMicroseconds(2);
+////    PORTB |= 0b00010000;
+//    digitalWrite(trig,HIGH);
+//    delayMicroseconds(10);
+////    PORTB &= 0b11101111;
+//    digitalWrite(trig,LOW);
+//    long duration = pulseIn(echo, HIGH, TIMEOUT);
+//    long distance = (duration / 2.0) / constant;
+//    return distance;
+//  }
 }
 
 void sendStatus() {
@@ -167,8 +167,8 @@ void sendStatus() {
   // packetType and command files accordingly, then use sendResponse
   // to send out the packet. See sendMessage on how to use sendResponse.
   //
-  long distance_front = US_distance("F", echoFront, SENSOR_M1);
-  long distance_side = US_distance("S", echoSide, SENSOR_M2);
+  long distance_front = US_distance("F", trigFront, echoFront, SENSOR_M1);
+  long distance_side = US_distance("S", trigSide, echoSide, SENSOR_M2);
 
   TPacket statusPacket;
   statusPacket.packetType = PACKET_TYPE_RESPONSE;
@@ -779,15 +779,15 @@ void waitForHello() {
 }
 
 void setupultrasonic() {
-
-  DDRB |= 0b00010000;
-  DDRB &= 0b11011110;
-  DDRD |= 0b10000000;
+//
+//  DDRB |= 0b00010000;
+//  DDRB &= 0b11011110;
+//  DDRD |= 0b10000000;
   
-  // pinMode(trigFront, OUTPUT); // Pin 7 = PD7
-  // pinMode(echoFront, INPUT); // Pin 8 = PB0
-  // pinMode(trigSide, OUTPUT); // Pin 12 = PB4
-  // pinMode(echoSide, INPUT); // Pin 13 = PB5
+   pinMode(trigFront, OUTPUT); // Pin 7 = PD7
+   pinMode(echoFront, INPUT); // Pin 8 = PB0
+   pinMode(trigSide, OUTPUT); // Pin 12 = PB4
+   pinMode(echoSide, INPUT); // Pin 13 = PB5
 }
 
 void setup() {
