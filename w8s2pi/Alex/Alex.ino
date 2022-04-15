@@ -132,10 +132,12 @@ long US_distance(char dir, int echo, float constant) {
     // PD7 & PB0
     PORTD &= 0b01111111;
     //digitalWrite(trig, LOW);
-    delayMicroseconds(2);
+    c_delay(2);
+    // delayMicroseconds(2);
     PORTD |= 0b10000000;
     //digitalWrite(trig, HIGH);
-    delayMicroseconds(10);
+    // delayMicroseconds(10);
+    c_delay(10);
     PORTD &= 0b01111111;
     //digitalWrite(trig, LOW);
     long duration = pulseIn(echo, HIGH, TIMEOUT);
@@ -147,10 +149,12 @@ long US_distance(char dir, int echo, float constant) {
     // PB4 & PB5
     PORTB &= 0b11101111; 
     //digitalWrite(trig,LOW);
-    delayMicroseconds(2);
+    // delayMicroseconds(2);
+    c_delay(2);
     PORTB |= 0b00010000;
     //digitalWrite(trig,HIGH);
-    delayMicroseconds(10);
+    // delayMicroseconds(10);
+    c_delay(10);
     PORTB &= 0b11101111;
     //digitalWrite(trig,LOW);
     long duration = pulseIn(echo, HIGH, TIMEOUT);
@@ -290,9 +294,6 @@ void leftISR() {
   } else if (dir == RIGHT) {
     leftForwardTicksTurns++;
   }
-  //  float distance = (leftTicks / (float) COUNTS_PER_REV) * WHEEL_CIRC;
-  //  Serial.print("LEFT_dist: ");
-  //  Serial.println(distance);
 }
 
 void rightISR() {
@@ -305,18 +306,11 @@ void rightISR() {
   } else if (dir == RIGHT) {
     rightReverseTicksTurns++;
   }
-  //  float distance = (rightTicks / (float) COUNTS_PER_REV) * WHEEL_CIRC;
-  //  Serial.print("RIGHT_dist: ");
-  //  Serial.println(distance);
 }
 
 // Set up the external interrupt pins INT0 and INT1
 // for falling edge triggered. Use bare-metal.
 void setupEINT() {
-  // Use bare-metal to configure pins 2 and 3 to be
-  // falling edge triggered. Remember to enable
-  // the INT0 and INT1 interrupts.
-
   EICRA = 0b00001010;
   EIMSK = 0b00000011;
 }
@@ -333,46 +327,10 @@ ISR(INT1_vect) {
   rightISR(); 
 }
 
-//LF
-ISR(TIMER0_COMPA_vect) {
-  // if (move_lf == 1) {
-  //   OCR0A = speed_l;
-  // } else {
-  //   OCR0A = 0;
-  // }
-}
-
-//RF
-ISR(TIMER1_COMPB_vect) {
-  // if (move_rf == 1) {
-  //   OCR1B = speed_r * (65535/255);
-  // } else {
-  //   OCR1B = 0;
-  // }
-}
-
-//LR
-ISR(TIMER0_COMPB_vect) {
-  // if (move_lr == 1) {
-  //   OCR0B = speed_l;
-  // } else {
-  //   OCR0B = 0;
-  // }
-}
-
-//RR
-ISR(TIMER2_COMPA_vect) {
-  // if (move_rr == 1) {
-  //   OCR2A = speed_r;
-  // } else {
-  //   OCR2A = 0;
-  // }
-}
-
 // Delay timer (1s)
 ISR(TIMER1_COMPA_vect)
 {
-  // _timerTicks++;
+  _timerTicks++;
 }
 
 /*
@@ -394,11 +352,23 @@ void setupTimer() {
   OCR1A = 62499;
 }
 
-void delay (int dur) {
+void c_delay (int dur) {
+  TCCR1B = 0b00000000;
+  cli();
+  TCCR1A = 0b00000000; 
+  TIMSK1 = 0b10;
+  OCR1A = 15; // 1us
+  TCNT1 = 0;
   _timerTicks = 0; // Reset counter
-  TCCR1B |= 0b00001100; // Turn on timer
+  TCCR1B = 0b00001001;
+  sei();
+
   while (_timerTicks < dur);
-  TCCR1B &= 0b11110011; // Turn off timer
+  TCNT1 = 0;
+  TCCR1A = 0b00100001; // Enable OC1B
+  TIMSK1 |= 0b100;  
+  TCCR1B = 0b00000011; 
+  OCR1B = 0;
 }
 
 // Implement INT0 and INT1 ISRs above.
@@ -464,9 +434,7 @@ void writeSerial(const char *buffer, int len) {
  *
  */
 
-// Set up Alex's motors. Right now this is empty, but
-// later you will replace it with code to set up the PWMs
-// to drive the motors.
+// Set up Alex's motors
 void setupMotors() {
   /* Our motor set up is:
    *    A1IN - Pin 5, PD5, OC0B
@@ -501,15 +469,9 @@ void setupMotors() {
 // We will implement this later. For now it is
 // blank.
 void startMotors() {
-  TCCR0B = 0b00000011; // No prescaling
-  TCCR1B = 0b00000011; // No prescaling
-  TCCR2B = 0b00000011; // No prescaling
-
-  // The B register should be here
-  move_lf = 0;
-  move_rf = 0;
-  move_lr = 0;
-  move_rr = 0;
+  TCCR0B = 0b00000011; 
+  TCCR1B = 0b00000011; 
+  TCCR2B = 0b00000011; 
   
   OCR0A = 0; //lf; // LF
   OCR0B = 0; //lr; // LR
@@ -536,28 +498,12 @@ int pwmVal(float speed) {
 void forward(float dist, float speed) {
   dir = FORWARD;
   int val = pwmVal(speed);
-  move_lf = 1;
-  move_rf = 1;
 
-  // For now we will ignore dist and move
-  // forward indefinitely. We will fix this
-  // in Week 9.
   if (dist > 0)
     deltaDist = dist;
   else
     deltaDist = 9999999;
   newDist = forwardDist + deltaDist;
-
-  // LF = Left forward pin, LR = Left reverse pin
-  // RF = Right forward pin, RR = Right reverse pin
-  // This will be replaced later with bare-metal code.
- 
-  //analogWrite(LF, val * LC);
-  //analogWrite(RF, val * RC);
-  //analogWrite(LR, 0);
-  //analogWrite(RR, 0);
-  //startMotors(int LF, int LR, int RF, int RR)
-  //startMotors(val * LC, 0, val * RC, 0); 
 
   speed_l = val * LC;
   speed_r = val * RC;
@@ -576,27 +522,12 @@ void reverse(float dist, float speed) {
   dir = BACKWARD;
   int val = pwmVal(speed);
 
-  // For now we will ignore dist and
-  // reverse indefinitely. We will fix this
-  // in Week 9.
-
   if (dist > 0)
     deltaDist = dist;
   else
     deltaDist = 9999999;
   newDist = reverseDist + deltaDist;
 
-  // LF = Left forward pin, LR = Left reverse pin
-  // RF = Right forward pin, RR = Right reverse pin
-  // This will be replaced later with bare-metal code.
-  //startMotors(int LF, int LR, int RF, int RR)
-  
-  //analogWrite(LR, val * LC);
-  //analogWrite(RR, val * RC);
-  //analogWrite(LF, 0);
-  //analogWrite(RF, 0);
-
-  //startMotors(0, val * LC, 0, val * RC);
   OCR2A = val * RC;
   OCR0B = val * LC;
   OCR0A = 0;
@@ -624,16 +555,6 @@ void left(float ang, float speed) {
   dir = LEFT;
   int val = pwmVal(speed);
 
-  // For now we will ignore ang. We will fix this in Week 9.
-  // We will also replace this code with bare-metal later.
-  // To turn left we reverse the left wheel and move
-  // the right wheel forward.
-  // analogWrite(LR, val * LC);
-  // analogWrite(RF, val * RC);
-  // analogWrite(LF, 0);
-  // analogWrite(RR, 0);
-
-  //startMotors(0, val * LC, val * RC, 0);
   OCR0B = val;
   OCR1B = val;
   OCR2A = 0;
@@ -654,16 +575,6 @@ void right(float ang, float speed) {
   dir = RIGHT;
   int val = pwmVal(speed);
 
-  // For now we will ignore ang. We will fix this in Week 9.
-  // We will also replace this code with bare-metal later.
-  // To turn right we reverse the right wheel and move
-  // the left wheel forward.
-  // analogWrite(RR, val * RC);
-  // analogWrite(LF, val * LC);
-  // analogWrite(LR, 0);
-  // analogWrite(RF, 0);
-
-  //startMotors(val * LC, 0, 0, val * RC);
   OCR0A = val;
   OCR2A = val;
   OCR0B = 0;
@@ -672,15 +583,10 @@ void right(float ang, float speed) {
 
 // Stop Alex. To replace with bare-metal code later.
 void stop() {
-//  analogWrite(LF, 0);
-//  analogWrite(LR, 0);
-//  analogWrite(RF, 0);
-//  analogWrite(RR, 0);
-//startMotors(0, 0, 0, 0);
-  OCR0A = 0; //lf; // LF
-  OCR0B = 0; //lr; // LR
-  OCR1B = 0; //rf * (65535/255); // RF
-  OCR2A = 0; //rr; // RR
+  OCR0A = 0; 
+  OCR0B = 0; 
+  OCR1B = 0; 
+  OCR2A = 0; 
 }
 
 /*
@@ -718,10 +624,6 @@ void handleCommand(TPacket *command) {
     forward((float)command->params[0], (float)command->params[1]);
     break;
 
-  /*
-   * Implement code for other commands here.
-   *
-   */
   case COMMAND_REVERSE:
     sendOK();
     reverse((float)command->params[0], (float)command->params[1]);
