@@ -335,44 +335,44 @@ ISR(INT1_vect) {
 
 //LF
 ISR(TIMER0_COMPA_vect) {
-  if (move_lf == 1) {
-    OCR0A = speed_l;
-  } else {
-    OCR0A = 0;
-  }
+  // if (move_lf == 1) {
+  //   OCR0A = speed_l;
+  // } else {
+  //   OCR0A = 0;
+  // }
 }
 
 //RF
 ISR(TIMER1_COMPB_vect) {
-  if (move_rf == 1) {
-    OCR1B = speed_r * (65535/255);
-  } else {
-    OCR1B = 0;
-  }
+  // if (move_rf == 1) {
+  //   OCR1B = speed_r * (65535/255);
+  // } else {
+  //   OCR1B = 0;
+  // }
 }
 
 //LR
 ISR(TIMER0_COMPB_vect) {
-  if (move_lr == 1) {
-    OCR0B = speed_l;
-  } else {
-    OCR0B = 0;
-  }
+  // if (move_lr == 1) {
+  //   OCR0B = speed_l;
+  // } else {
+  //   OCR0B = 0;
+  // }
 }
 
 //RR
 ISR(TIMER2_COMPA_vect) {
-  if (move_rr == 1) {
-    OCR2A = speed_r;
-  } else {
-    OCR2A = 0;
-  }
+  // if (move_rr == 1) {
+  //   OCR2A = speed_r;
+  // } else {
+  //   OCR2A = 0;
+  // }
 }
 
 // Delay timer (1s)
 ISR(TIMER1_COMPA_vect)
 {
-  _timerTicks++;
+  // _timerTicks++;
 }
 
 /*
@@ -478,26 +478,22 @@ void setupMotors() {
   DDRD |= 0b01100000; // Pin 5 and 6
   DDRB |= 0b00001100; // Pin 10 and 11
   
+  TCNT0 = 0;
   TCCR0A = 0b10100001; // Enable OC0A and OC0B
-  TCCR0B = 0b00000001; // No prescaling
   TIMSK0 |= 0b110; // OCIEA = 1 OCIEB = 1
  
-  TCCR1A = 0b00110011; // Enable OC1B
-  TCCR1B = 0b00010001; // No prescaling
+  // Use mode 1 instead. so we dont have to convert to 10 bit resolution
+  TCNT1 = 0;
+  TCCR1A = 0b00100001; // Enable OC1B
   TIMSK1 |= 0b100;
    
+  TCNT2 = 0;
   TCCR2A = 0b10000001; // Enable OC2A
-  TCCR2B = 0b00000001; // No prescaling
   TIMSK2 |= 0b010;
 
-  TCNT0 = 0;
   OCR0A = 0;
   OCR0B = 0;
-  
-  TCNT1 = 0;
-  OCR1B = 0; // should have a L or H here
-  
-  TCNT2 = 0;
+  OCR1B = 0; 
   OCR2A = 0;
 }
 
@@ -505,6 +501,10 @@ void setupMotors() {
 // We will implement this later. For now it is
 // blank.
 void startMotors() {
+  TCCR0B = 0b00000001; // No prescaling
+  TCCR1B = 0b00000001; // No prescaling
+  TCCR2B = 0b00000001; // No prescaling
+
   // The B register should be here
   move_lf = 0;
   move_rf = 0;
@@ -561,6 +561,8 @@ void forward(float dist, float speed) {
 
   speed_l = val * LC;
   speed_r = val * RC;
+  OCR0A = speed_l;
+  OCR2A = speed_r;
 }
 
 // Reverse Alex "dist" cm at speed "speed".
@@ -593,6 +595,8 @@ void reverse(float dist, float speed) {
   //analogWrite(RF, 0);
 
   //startMotors(0, val * LC, 0, val * RC);
+  OCR1B = val * RC;
+  OCR0B = val * LC;
 }
 
 // Turn Alex left "ang" degrees at speed "speed".
@@ -626,6 +630,8 @@ void left(float ang, float speed) {
   // analogWrite(RR, 0);
 
   //startMotors(0, val * LC, val * RC, 0);
+  OCR0B = val;
+  OCR2A = val;
 }
 
 // Turn Alex right "ang" degrees at speed "speed".
@@ -652,6 +658,8 @@ void right(float ang, float speed) {
   // analogWrite(RF, 0);
 
   //startMotors(val * LC, 0, 0, val * RC);
+  OCR0A = val;
+  OCR1B = val;
 }
 
 // Stop Alex. To replace with bare-metal code later.
@@ -660,8 +668,11 @@ void stop() {
 //  analogWrite(LR, 0);
 //  analogWrite(RF, 0);
 //  analogWrite(RR, 0);
-  startMotors();
-  //startMotors(0, 0, 0, 0);
+//startMotors(0, 0, 0, 0);
+  OCR0A = 0; //lf; // LF
+  OCR0B = 0; //lr; // LR
+  OCR1B = 0; //rf * (65535/255); // RF
+  OCR2A = 0; //rr; // RR
 }
 
 /*
@@ -804,7 +815,6 @@ void handlePacket(TPacket *packet) {
     break;
 
   case PACKET_TYPE_HELLO:
-    //      waitForHello();
     break;
   }
 }
