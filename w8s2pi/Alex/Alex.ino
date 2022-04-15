@@ -95,13 +95,13 @@ unsigned long targetTicks;
 //Timers
 volatile long _timerTicks;
 
-char dataRecv, dataSend;
-
 //Motor Interrupts
 volatile int move_lf;
 volatile int move_rf;
 volatile int move_lr;
 volatile int move_rr;
+volatile long speed_l;
+volatile long speed_r;
 
 /*
  *
@@ -141,12 +141,13 @@ void c_delay (int dur) {
   setupMotors();
   startMotors();
   
+  /*
   TCNT1 = 0;
   TCCR1A = 0b00100001; // Enable OC1B
   TIMSK1 |= 0b100;  
   TCCR1B = 0b00000011; 
   OCR1B = 0;
-  
+  */
 }
 
 
@@ -421,6 +422,13 @@ void setupTimer() {
   OCR1A = 62499;
 }
 
+void delay (int dur) {
+  _timerTicks = 0; // Reset counter
+  TCCR1B |= 0b00001100; // Turn on timer
+  while (_timerTicks < dur);
+  TCCR1B &= 0b11110011; // Turn off timer
+}
+
 // Implement INT0 and INT1 ISRs above.
 
 /*
@@ -455,6 +463,7 @@ void startSerial() {
 // ch if available. Also returns TRUE if ch is valid.
 // This will be replaced later with bare-metal code.
 
+
 int readSerial(char *buffer) {
 
   int count = 0;
@@ -469,14 +478,38 @@ int readSerial(char *buffer) {
   return count;
 }
 
+
+/*
+int readSerial(char *buffer) {
+  
+
+  int count = 0;
+  
+  while ((UCSR0A & 0b10000000) != 0) {
+    buffer[count] = UDR0;
+    count++; 
+  }
+
+  // Disable UDRE interrupt
+  //UCSR0B &= 0b11011111;
+
+  return count;
+}
+*/
+
 // Write to the serial port. Replaced later with
 // bare-metal code
 
 void writeSerial(const char *buffer, int len) {
-  Serial.write(buffer, len);
+  //Serial.write(buffer, len);
   // not sure what to do here, combine all the items in the array buffer given
   // the length, to form a string? Enable UDRE interrupt
   //UCSR0B |= 0b00100000;
+  int i = 0;
+  while(i < len) {
+    while((UCSR0A & 0b00100000) == 0);
+    UDR0 = buffer[i++];
+  }
 }
 
 /*
