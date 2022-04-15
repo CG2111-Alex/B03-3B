@@ -54,7 +54,7 @@ volatile TDirection dir = STOP;
 #define SENSOR_M1 28.476
 #define SENSOR_M2 28.249
 
-#define RC 0.85
+#define RC 1
 #define LC 1
 
 #define UDRIEMASK 0b00100000
@@ -501,9 +501,9 @@ void setupMotors() {
 // We will implement this later. For now it is
 // blank.
 void startMotors() {
-  TCCR0B = 0b00000001; // No prescaling
-  TCCR1B = 0b00000001; // No prescaling
-  TCCR2B = 0b00000001; // No prescaling
+  TCCR0B = 0b00000011; // No prescaling
+  TCCR1B = 0b00000011; // No prescaling
+  TCCR2B = 0b00000011; // No prescaling
 
   // The B register should be here
   move_lf = 0;
@@ -562,9 +562,9 @@ void forward(float dist, float speed) {
   speed_l = val * LC;
   speed_r = val * RC;
   OCR0A = speed_l;
-  OCR2A = speed_r;
+  OCR1B = speed_r;
   OCR0B = 0;
-  OCR1B = 0;
+  OCR2A = 0;
 }
 
 // Reverse Alex "dist" cm at speed "speed".
@@ -597,10 +597,10 @@ void reverse(float dist, float speed) {
   //analogWrite(RF, 0);
 
   //startMotors(0, val * LC, 0, val * RC);
-  OCR1B = val * RC;
+  OCR2A = val * RC;
   OCR0B = val * LC;
   OCR0A = 0;
-  OCR2A = 0;
+  OCR1B = 0;
 }
 
 // Turn Alex left "ang" degrees at speed "speed".
@@ -635,8 +635,8 @@ void left(float ang, float speed) {
 
   //startMotors(0, val * LC, val * RC, 0);
   OCR0B = val;
-  OCR2A = val;
-  OCR1B = 0;
+  OCR1B = val;
+  OCR2A = 0;
   OCR0A = 0;
 }
 
@@ -665,9 +665,9 @@ void right(float ang, float speed) {
 
   //startMotors(val * LC, 0, 0, val * RC);
   OCR0A = val;
-  OCR1B = val;
+  OCR2A = val;
   OCR0B = 0;
-  OCR2A = 0;
+  OCR1B = 0;
 }
 
 // Stop Alex. To replace with bare-metal code later.
