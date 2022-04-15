@@ -495,7 +495,7 @@ void setupMotors() {
   OCR0B = 0;
   
   TCNT1 = 0;
-  OCR1B = 0;
+  OCR1B = 0; // should have a L or H here
   
   TCNT2 = 0;
   OCR2A = 0;
@@ -505,6 +505,7 @@ void setupMotors() {
 // We will implement this later. For now it is
 // blank.
 void startMotors() {
+  // The B register should be here
   move_lf = 0;
   move_rf = 0;
   move_lr = 0;
