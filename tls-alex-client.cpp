@@ -194,7 +194,7 @@ void *writerThread(void *conn)
 			case 'G':
 			case 'w':
 			case 'a':
-			case 'w':
+			case 's':
 			case 'd':
 					params[0]=0;
 					params[1]=0;
