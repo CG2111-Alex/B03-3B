@@ -4,12 +4,12 @@
 - `ros_epp` Contains the ROS workspace to run RPlidar and HectorSLAM nodes
 
 # Compilation
-Upload `Alex/Alex.ino` to the Arduino 
-Compile `tls-alex-client.cpp` on the **Host Laptop**
+- Upload `Alex/Alex.ino` to the Arduino
+- Compile `tls-alex-client.cpp` on the **Host Laptop**
 ```
 g++ tls-alex-client.cpp make_tls_client.cpp tls_client_lib.cpp tls_pthread.cpp tls_common_lib.cpp -pthread -lssl -lcrypto -o tls-alex-client
 ```
-Compile `tls-alex-server.cpp` on the **Raspberry Pi**
+- Compile `tls-alex-server.cpp` on the **Raspberry Pi**
 ```
 g++ tls-alex-server.cpp tls_server_lib.cpp tls_pthread.cpp make_tls_server.cpp tls_common_lib.cpp serial.cpp serialize.cpp -pthread -lssl -lcrypto -o tls-alex-server
 ```
