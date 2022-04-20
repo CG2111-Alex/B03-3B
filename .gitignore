@@ -1,9 +1,6 @@
-ros/**
-slam/**
-rplidar_sdk_v1.5.7/**
+ros_epp/**
 *.key
 *.crt
 *.csr
 *.pem
 *.srl
-marvin@172.20.10.9

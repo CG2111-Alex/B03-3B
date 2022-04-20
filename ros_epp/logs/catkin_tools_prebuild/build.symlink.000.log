@@ -1,0 +1,12 @@
+Symlinking /home/kyrixn/ros_epp/devel/./local_setup.zsh
+Symlinking /home/kyrixn/ros_epp/devel/./setup.zsh
+Symlinking /home/kyrixn/ros_epp/devel/./setup.bash
+Symlinking /home/kyrixn/ros_epp/devel/./local_setup.bash
+Symlinking /home/kyrixn/ros_epp/devel/./setup.sh
+Symlinking /home/kyrixn/ros_epp/devel/./env.sh
+Symlinking /home/kyrixn/ros_epp/devel/./cmake.lock
+Symlinking /home/kyrixn/ros_epp/devel/./_setup_util.py
+Symlinking /home/kyrixn/ros_epp/devel/./local_setup.sh
+Symlinking /home/kyrixn/ros_epp/devel/share/catkin_tools_prebuild/cmake/catkin_tools_prebuildConfig.cmake
+Symlinking /home/kyrixn/ros_epp/devel/share/catkin_tools_prebuild/cmake/catkin_tools_prebuildConfig-version.cmake
+Symlinking /home/kyrixn/ros_epp/devel/lib/pkgconfig/catkin_tools_prebuild.pc

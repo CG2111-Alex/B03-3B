@@ -1,0 +1,2 @@
+- setup-file:
+    local-name: /home/kyrixn/ros_epp/devel/.private/catkin_tools_prebuild/setup.sh

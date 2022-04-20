@@ -1,0 +1,8 @@
+prefix=/home/kyrixn/ros_epp/install
+
+Name: catkin
+Description: Description of catkin
+Version: 0.8.10
+Cflags: 
+Libs: -L${prefix}/lib 
+Requires: 

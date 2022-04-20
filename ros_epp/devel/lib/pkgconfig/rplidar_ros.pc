@@ -1,0 +1,1 @@
+/home/kyrixn/ros_epp/devel/.private/rplidar_ros/lib/pkgconfig/rplidar_ros.pc

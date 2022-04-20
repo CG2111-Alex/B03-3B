@@ -1,0 +1,1 @@
+/home/kyrixn/ros_epp/devel/.private/hector_slam_launch/lib/pkgconfig/hector_slam_launch.pc

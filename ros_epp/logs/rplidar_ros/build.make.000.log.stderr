@@ -1,0 +1,3 @@
+[01m[K/home/kyrixn/ros_epp/src/RPLidar_Hector_SLAM/rplidar_ros/src/node.cpp:202:12:[m[K [01;35m[Kwarning: [m[Kinvalid suffix on literal; C++11 requires a space between literal and string macro [[01;35m[K-Wliteral-suffix[m[K]
+  202 |            [01;35m[K"[m[KSDK Version: "RPLIDAR_SDK_VERSION"\n");
+      |            [01;35m[K^[m[K
