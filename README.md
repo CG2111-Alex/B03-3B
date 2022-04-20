@@ -1,8 +1,7 @@
 # Contents
-- `Alex` Contains the Arduino code and header fike
+- `Alex` Contains the Arduino code and header file
 - `calibration` Contains the Arduino code used to find the constants for ultrasonic sensor distance calibration
 - `source` Contains the TLS server and client code, as well as the header files
-- `ros_epp` Contains the ROS workspace to run RPlidar and HectorSLAM nodes
 
 # Compilation and Setting Up
 Upload `Alex/Alex.ino` to the Arduino <br>
