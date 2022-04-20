@@ -95,14 +95,6 @@ unsigned long targetTicks;
 //Timers
 volatile long _timerTicks;
 
-//Motor Interrupts
-volatile int move_lf;
-volatile int move_rf;
-volatile int move_lr;
-volatile int move_rr;
-volatile long speed_l;
-volatile long speed_r;
-
 /*
  *
  * Alex Communication Routines.
@@ -155,15 +147,10 @@ long US_distance(char dir, int trig, int echo, float constant) {
     if (dir == "F") { // Trig Pin 7 = PD7
     // PD7 & PB0
       PORTD &= 0b01111111;
-      //digitalWrite(trig, LOW);
       c_delay(2);
-      //delayMicroseconds(2);
       PORTD |= 0b10000000;
-      //digitalWrite(trig, HIGH);
       c_delay(10);
-      //delayMicroseconds(10);
       PORTD &= 0b01111111;
-      //digitalWrite(trig, LOW);
       long duration = pulseIn(echo, HIGH, TIMEOUT);
       long distance = (duration / 2.0) / constant;
       return distance;
@@ -172,15 +159,10 @@ long US_distance(char dir, int trig, int echo, float constant) {
     if (dir == "S") { // Trig Pin 12 = PB4
       // PB4 & PB5
       PORTB &= 0b11101111; 
-      //digitalWrite(trig,LOW);
       c_delay(2);
-     //delayMicroseconds(2);
       PORTB |= 0b00010000;
-      //digitalWrite(trig,HIGH);
       c_delay(10);
-      //delayMicroseconds(10);
       PORTB &= 0b11101111;
-      //digitalWrite(trig,LOW);
       long duration = pulseIn(echo, HIGH, TIMEOUT);
       long distance = (duration / 2.0) / constant;
       return distance;
@@ -194,7 +176,7 @@ void sendStatus() {
   // Use the params array to store this information, and set the
   // packetType and command files accordingly, then use sendResponse
   // to send out the packet. See sendMessage on how to use sendResponse.
-  //
+
   long distance_front = US_distance("F", trigFront, echoFront, SENSOR_M1);
   long distance_side = US_distance("S", trigSide, echoSide, SENSOR_M2);
 
@@ -318,9 +300,6 @@ void leftISR() {
   } else if (dir == RIGHT) {
     leftForwardTicksTurns++;
   }
-  //  float distance = (leftTicks / (float) COUNTS_PER_REV) * WHEEL_CIRC;
-  //  Serial.print("LEFT_dist: ");
-  //  Serial.println(distance);
 }
 
 void rightISR() {
@@ -333,18 +312,11 @@ void rightISR() {
   } else if (dir == RIGHT) {
     rightReverseTicksTurns++;
   }
-  //  float distance = (rightTicks / (float) COUNTS_PER_REV) * WHEEL_CIRC;
-  //  Serial.print("RIGHT_dist: ");
-  //  Serial.println(distance);
 }
 
 // Set up the external interrupt pins INT0 and INT1
 // for falling edge triggered. Use bare-metal.
 void setupEINT() {
-  // Use bare-metal to configure pins 2 and 3 to be
-  // falling edge triggered. Remember to enable
-  // the INT0 and INT1 interrupts.
-
   EICRA = 0b00001010;
   EIMSK = 0b00000011;
 }
@@ -361,92 +333,25 @@ ISR(INT1_vect) {
   rightISR(); 
 }
 
-//LF
-ISR(TIMER0_COMPA_vect) {
-  // if (move_lf == 1) {
-  //   OCR0A = speed_l;
-  // } else {
-  //   OCR0A = 0;
-  // }
-}
-
-//RF
-ISR(TIMER1_COMPB_vect) {
-  // if (move_rf == 1) {
-  //   OCR1B = speed_r * (65535/255);
-  // } else {
-  //   OCR1B = 0;
-  // }
-}
-
-//LR
-ISR(TIMER0_COMPB_vect) {
-  // if (move_lr == 1) {
-  //   OCR0B = speed_l;
-  // } else {
-  //   OCR0B = 0;
-  // }
-}
-
-//RR
-ISR(TIMER2_COMPA_vect) {
-  // if (move_rr == 1) {
-  //   OCR2A = speed_r;
-  // } else {
-  //   OCR2A = 0;
-  // }
-}
-
 // Delay timer (1s)
 ISR(TIMER1_COMPA_vect)
 {
-  // _timerTicks++;
+  _timerTicks++;
 }
-
-/*
-ISR(USART_RX_vect) { 
-  dataRecv = UDR0;
-}
-
-ISR(USART_UDRE_vect) {
-  UDR0 = dataSend;
-  UCSR0B &= ~UDRIEMASK;
-}
-*/
-
-void setupTimer() {
-  // Set timer 1 to produce 1s (1000000us) ticks 
-  // But do not start the timer here.
-  TIMSK1 |= 0b10;
-  TCNT1 = 0;
-  OCR1A = 62499;
-}
-
-void delay (int dur) {
-  _timerTicks = 0; // Reset counter
-  TCCR1B |= 0b00001100; // Turn on timer
-  while (_timerTicks < dur);
-  TCCR1B &= 0b11110011; // Turn off timer
-}
-
-// Implement INT0 and INT1 ISRs above.
 
 /*
  * Setup and start codes for serial communications
  *
  */
-// Set up the serial connection. For now we are using
-// Arduino Wiring, you will replace this later
-// with bare-metal code.
+// Set up the serial connection. 
 void setupSerial() {
-  // To replace later with bare-metal.
-  Serial.begin(9600);
-  // baud rate = ( 16MHz/(16*9600) ) - 1 = 103.1666s
-  //UBRR0L = 103;
-  //UBRR0H = 0;
   // Setting to asynchronous USART
-  //UCSR0C = 00000110;
-  //UCSR0A = 0; // to disable double-speed mode and multiprocessor mode
+  UCSR0C = 0b00000110;
+  // baud rate = ( 16MHz/(16*9600) ) - 1 = 103.1666s
+  UBRR0L = 103;
+  UBRR0H = 0;
+
+  UCSR0A = 0; // to disable double-speed mode and multiprocessor mode
 }
 
 // Start the serial connection. For now we are using
@@ -454,9 +359,7 @@ void setupSerial() {
 // replace this later with bare-metal code.
 
 void startSerial() {
-  // Empty for now. To be replaced with bare-metal code
-  // later on.
-  //UCSR0B = 0b10011000;
+  UCSR0B = 0b10011000;
 }
 
 // Read the serial port. Returns the read character in
@@ -472,39 +375,13 @@ int readSerial(char *buffer) {
     buffer[count++] = Serial.read();
   }
 
-  // Disable UDRE interrupt
-  //UCSR0B &= 0b11011111;
-
   return count;
 }
 
 
-/*
-int readSerial(char *buffer) {
-  
-
-  int count = 0;
-  
-  while ((UCSR0A & 0b10000000) != 0) {
-    buffer[count] = UDR0;
-    count++; 
-  }
-
-  // Disable UDRE interrupt
-  //UCSR0B &= 0b11011111;
-
-  return count;
-}
-*/
-
-// Write to the serial port. Replaced later with
-// bare-metal code
+// Write to the serial port.
 
 void writeSerial(const char *buffer, int len) {
-  //Serial.write(buffer, len);
-  // not sure what to do here, combine all the items in the array buffer given
-  // the length, to form a string? Enable UDRE interrupt
-  //UCSR0B |= 0b00100000;
   int i = 0;
   while(i < len) {
     while((UCSR0A & 0b00100000) == 0);
@@ -564,10 +441,10 @@ void startMotors() {
   move_lr = 0;
   move_rr = 0;
   
-  OCR0A = 0; //lf; // LF
-  OCR0B = 0; //lr; // LR
-  OCR1B = 0; //rf * (65535/255); // RF
-  OCR2A = 0; //rr; // RR
+  OCR0A = 0; 
+  OCR0B = 0; 
+  OCR1B = 0; 
+  OCR2A = 0; 
 }
 
 // Convert percentages to PWM values
@@ -581,9 +458,7 @@ int pwmVal(float speed) {
   return (int)((speed / 100.0) * 255.0);
 }
 
-// Move Alex forward "dist" cm at speed "speed".
-// "speed" is expressed as a percentage. E.g. 50 is
-// move forward at half speed.
+// Move Alex forward "dist" cm at speed "speed" as a percentage.
 // Specifying a distance of 0 means Alex will
 // continue moving forward indefinitely.
 void forward(float dist, float speed) {
@@ -592,25 +467,11 @@ void forward(float dist, float speed) {
   move_lf = 1;
   move_rf = 1;
 
-  // For now we will ignore dist and move
-  // forward indefinitely. We will fix this
-  // in Week 9.
   if (dist > 0)
     deltaDist = dist;
   else
     deltaDist = 9999999;
   newDist = forwardDist + deltaDist;
-
-  // LF = Left forward pin, LR = Left reverse pin
-  // RF = Right forward pin, RR = Right reverse pin
-  // This will be replaced later with bare-metal code.
- 
-  //analogWrite(LF, val * LC);
-  //analogWrite(RF, val * RC);
-  //analogWrite(LR, 0);
-  //analogWrite(RR, 0);
-  //startMotors(int LF, int LR, int RF, int RR)
-  //startMotors(val * LC, 0, val * RC, 0); 
 
   OCR0A = val * LC;
   OCR1B = val * RC;
@@ -618,18 +479,12 @@ void forward(float dist, float speed) {
   OCR2A = 0;
 }
 
-// Reverse Alex "dist" cm at speed "speed".
-// "speed" is expressed as a percentage. E.g. 50 is
-// reverse at half speed.
+// Reverse Alex "dist" cm at speed "speed" as a percentage.
 // Specifying a distance of 0 means Alex will
 // continue reversing indefinitely.
 void reverse(float dist, float speed) {
   dir = BACKWARD;
   int val = pwmVal(speed);
-
-  // For now we will ignore dist and
-  // reverse indefinitely. We will fix this
-  // in Week 9.
 
   if (dist > 0)
     deltaDist = dist;
@@ -637,26 +492,13 @@ void reverse(float dist, float speed) {
     deltaDist = 9999999;
   newDist = reverseDist + deltaDist;
 
-  // LF = Left forward pin, LR = Left reverse pin
-  // RF = Right forward pin, RR = Right reverse pin
-  // This will be replaced later with bare-metal code.
-  //startMotors(int LF, int LR, int RF, int RR)
-  
-  //analogWrite(LR, val * LC);
-  //analogWrite(RR, val * RC);
-  //analogWrite(LF, 0);
-  //analogWrite(RF, 0);
-
-  //startMotors(0, val * LC, 0, val * RC);
   OCR2A = val * RC;
   OCR0B = val * LC;
   OCR0A = 0;
   OCR1B = 0;
 }
 
-// Turn Alex left "ang" degrees at speed "speed".
-// "speed" is expressed as a percentage. E.g. 50 is
-// turn left at half speed.
+// Turn Alex left "ang" degrees at speed "speed" as a percentage.
 // Specifying an angle of 0 degrees will cause Alex to
 // turn left indefinitely.
 unsigned long computeDeltaTicks(float ang) {
@@ -675,25 +517,13 @@ void left(float ang, float speed) {
   dir = LEFT;
   int val = pwmVal(speed);
 
-  // For now we will ignore ang. We will fix this in Week 9.
-  // We will also replace this code with bare-metal later.
-  // To turn left we reverse the left wheel and move
-  // the right wheel forward.
-  // analogWrite(LR, val * LC);
-  // analogWrite(RF, val * RC);
-  // analogWrite(LF, 0);
-  // analogWrite(RR, 0);
-
-  //startMotors(0, val * LC, val * RC, 0);
   OCR0B = val;
   OCR1B = val;
   OCR2A = 0;
   OCR0A = 0;
 }
 
-// Turn Alex right "ang" degrees at speed "speed".
-// "speed" is expressed as a percentage. E.g. 50 is
-// turn left at half speed.
+// Turn Alex right "ang" degrees at speed "speed" as a percentage.
 // Specifying an angle of 0 degrees will cause Alex to
 // turn right indefinitely.
 void right(float ang, float speed) {
@@ -705,33 +535,18 @@ void right(float ang, float speed) {
   dir = RIGHT;
   int val = pwmVal(speed);
 
-  // For now we will ignore ang. We will fix this in Week 9.
-  // We will also replace this code with bare-metal later.
-  // To turn right we reverse the right wheel and move
-  // the left wheel forward.
-  // analogWrite(RR, val * RC);
-  // analogWrite(LF, val * LC);
-  // analogWrite(LR, 0);
-  // analogWrite(RF, 0);
-
-  //startMotors(val * LC, 0, 0, val * RC);
   OCR0A = val;
   OCR2A = val;
   OCR0B = 0;
   OCR1B = 0;
 }
 
-// Stop Alex. To replace with bare-metal code later.
+// Stop Alex.
 void stop() {
-//  analogWrite(LF, 0);
-//  analogWrite(LR, 0);
-//  analogWrite(RF, 0);
-//  analogWrite(RR, 0);
-//startMotors(0, 0, 0, 0);
-  OCR0A = 0; //lf; // LF
-  OCR0B = 0; //lr; // LR
-  OCR1B = 0; //rf * (65535/255); // RF
-  OCR2A = 0; //rr; // RR
+  OCR0A = 0; 
+  OCR0B = 0; 
+  OCR1B = 0; 
+  OCR2A = 0; 
 }
 
 /*
@@ -764,15 +579,31 @@ void initializeState() { clearCounters(); }
 void handleCommand(TPacket *command) {
   switch (command->command) {
   // For movement commands, param[0] = distance, param[1] = speed.
+  case 11:
+    sendOK();
+    forward(5, 65);
+    break;
+
+  case 12:
+    sendOK();
+    left(20, 90);
+    break;
+
+  case 13:
+    sendOK();
+    reverse(5,65);
+    break;
+
+  case 14:
+    sendOK();
+    right(20, 90);
+    break;
+  
   case COMMAND_FORWARD:
     sendOK();
     forward((float)command->params[0], (float)command->params[1]);
     break;
 
-  /*
-   * Implement code for other commands here.
-   *
-   */
   case COMMAND_REVERSE:
     sendOK();
     reverse((float)command->params[0], (float)command->params[1]);
@@ -834,11 +665,6 @@ void setupultrasonic() {
    DDRB |= 0b00010000;
    DDRB &= 0b11011110;
    DDRD |= 0b10000000;
-  
-   //pinMode(trigFront, OUTPUT); // Pin 7 = PD7
-   //pinMode(echoFront, INPUT); // Pin 8 = PB0
-   //pinMode(trigSide, OUTPUT); // Pin 12 = PB4
-   //pinMode(echoSide, INPUT); // Pin 13 = PB5
 }
 
 void setup() {

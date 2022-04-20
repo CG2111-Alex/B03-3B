@@ -186,12 +186,16 @@ void *writerThread(void *conn)
 						memcpy(&buffer[2], params, sizeof(params));
 						sendData(conn, buffer, sizeof(buffer));
 						break;
-			case 's':
-			case 'S':
+			case 'x':
+			case 'X':
 			case 'c':
 			case 'C':
 			case 'g':
 			case 'G':
+			case 'w':
+			case 'a':
+			case 'w':
+			case 'd':
 					params[0]=0;
 					params[1]=0;
 					memcpy(&buffer[2], params, sizeof(params));
