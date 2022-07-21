@@ -1,1 +1,0 @@
-/home/kyrixn/ros_epp/devel/.private/catkin/local_setup.zsh

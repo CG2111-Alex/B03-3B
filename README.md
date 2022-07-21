@@ -1,3 +1,12 @@
+# Overview
+This is a Final Project conducted in National University of Singapore, module code CG2111A: Engineering Principle and Practice II, Semester 2 AY2122.
+## Author
+- Lee Zhi Xuan
+- Liong Wei Yong, Deen
+- Marvin Pranajaya
+- Ong Chuan Kai
+- Zhang Wenze
+
 # Contents
 - `Alex` Contains the Arduino code and header file
 - `calibration` Contains the Arduino code used to find the constants for ultrasonic sensor distance calibration

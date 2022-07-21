@@ -1,6 +1,0 @@
-devel_space: /home/kyrixn/ros_epp/devel
-install: false
-install_space: /home/kyrixn/ros_epp/install
-profile: default
-source_space: /home/kyrixn/ros_epp/src
-workspace: /home/kyrixn/ros_epp

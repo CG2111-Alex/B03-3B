@@ -1,6 +1,0 @@
-Symlinking /home/kyrixn/ros_epp/devel/share/hector_geotiff/cmake/hector_geotiffConfig-version.cmake
-Symlinking /home/kyrixn/ros_epp/devel/share/hector_geotiff/cmake/hector_geotiffConfig.cmake
-Symlinking /home/kyrixn/ros_epp/devel/lib/libgeotiff_writer.so
-Symlinking /home/kyrixn/ros_epp/devel/lib/pkgconfig/hector_geotiff.pc
-Symlinking /home/kyrixn/ros_epp/devel/lib/hector_geotiff/geotiff_saver
-Symlinking /home/kyrixn/ros_epp/devel/lib/hector_geotiff/geotiff_node
